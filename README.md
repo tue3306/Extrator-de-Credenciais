@@ -4,7 +4,7 @@
 
 Este script foi projetado para extrair dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e histórico de navegação de vários navegadores, incluindo Google Chrome, Brave, Opera e Yandex.
 
-**Atenção: Este script deve ser usado **apenas para fins educacionais** ou com permissão explícita do proprietário dos dados. O uso indevido pode violar leis de privacidade.**
+**Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
 - **Coleta de Tokens**
