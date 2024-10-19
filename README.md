@@ -2,37 +2,41 @@
 
 ## `browsersextrator.py`
 
-Este script foi projetado para extrair dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e histórico de navegação de vários navegadores, incluindo Google Chrome, Brave, Opera e Yandex. Ele usa bibliotecas como `sqlite3`, `win32crypt`, `AES` e outras para acessar bancos de dados locais e descriptografar informações sensíveis.
+Este script foi projetado para extrair dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e histórico de navegação de vários navegadores, incluindo Google Chrome, Brave, Opera e Yandex.
+
+**Atenção: Este script deve ser usado **apenas para fins educacionais** ou com permissão explícita do proprietário dos dados. O uso indevido pode violar leis de privacidade.**
 
 ### Funcionalidades Principais:
-- **Coleta de Tokens**: O script percorre vários caminhos de aplicativos em busca de tokens armazenados no `Local Storage`, e descriptografa utilizando chaves extraídas dos arquivos de estado local (`Local State`).
-- **Extração de Histórico de Navegação**: Copia o banco de dados de histórico de navegação e extrai informações como URLs visitadas, títulos das páginas e contagem de visitas.
-- **Extração de Dados de Preenchimento Automático**: Acessa o banco de dados `Autofill` dos navegadores para extrair informações preenchidas automaticamente em formulários.
-- **Extração de Cartões de Crédito**: Descriptografa números de cartões de crédito armazenados e exibe os dados, incluindo nome no cartão e data de expiração.
-- **Salvamento dos Resultados**: Os dados extraídos são salvos em arquivos de texto localizados na área de trabalho do usuário, utilizando caminhos dinâmicos.
+- **Coleta de Tokens**
+- **Extração de Histórico de Navegação**
+- **Extração de Dados de Preenchimento Automático**
+- **Extração de Cartões de Crédito**
+- **Salvamento dos Resultados**
 
 ---
 
 ## `extrator.py`
 
-Este script expande a funcionalidade de extração de dados, com ênfase na coleta de tokens e dados de navegação, além de obter informações sobre o sistema operacional e a chave de licença do Windows. Ele também pode enviar mensagens para um webhook do Discord ou Telegram com os dados coletados.
+Expande a funcionalidade de extração de dados, incluindo informações sobre o sistema operacional e chave de licença do Windows, além de enviar dados para webhooks.
+
+**Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
-- **Informações do Sistema**: Coleta dados sobre o sistema, como o nome do computador, sistema operacional, chave do Windows, e endereço MAC.
-- **Coleta de Tokens e Informações do Navegador**: Semelhante ao script anterior, extrai tokens de várias plataformas, como Discord e Steam, além de descriptografar senhas e cookies armazenados nos navegadores.
-- **Coleta de Geolocalização**: Usa a API `ipinfo.io` para obter informações de geolocalização com base no IP público do usuário.
-- **Envio de Resultados para Webhooks**: Os resultados coletados podem ser enviados para um webhook do Discord ou para o Telegram, permitindo monitoramento remoto das informações extraídas.
-- **Envio de Dados ao Telegram**: Usa a API do Telegram para enviar os dados coletados diretamente para um chat específico, configurado via token e chat ID.
-- **Envio de Dados ao Discord**: Também pode enviar as informações para um webhook do Discord, facilitando o recebimento das informações em tempo real.
+- **Informações do Sistema**
+- **Coleta de Tokens e Informações do Navegador**
+- **Coleta de Geolocalização**
+- **Envio de Resultados para Webhooks**
 
 ---
 
 ## `chromeextrator.py`
 
-Este script é especializado na extração de senhas armazenadas no navegador Google Chrome, lidando com múltiplos perfis de usuário.
+Script especializado em extrair senhas do Google Chrome.
+
+**Atenção: Este script deve ser usado apenas para fins educacionais.**
 
 ### Funcionalidades Principais:
-- **Fechamento de Processos do Chrome**: Antes de acessar os dados, o script força o fechamento de processos do Chrome para evitar conflitos com os bancos de dados bloqueados.
-- **Extração de Senhas**: Descriptografa senhas armazenadas nos bancos de dados do Chrome, utilizando chaves de criptografia extraídas do arquivo `Local State`.
-- **Múltiplos Perfis**: Processa vários perfis do Chrome, extraindo senhas de todos os perfis identificados no diretório do navegador.
-- **Salvamento de Senhas**: As senhas descriptografadas são salvas em um arquivo `ChromePasswords.txt` localizado na área de trabalho do usuário.
+- **Fechamento de Processos do Chrome**
+- **Extração de Senhas**
+- **Múltiplos Perfis**
+- **Salvamento de Senhas**
