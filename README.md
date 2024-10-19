@@ -15,13 +15,15 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 
 ## `extrator.py`
 
-Este script expande a funcionalidade de extração de dados, com ênfase na coleta de tokens e dados de navegação, além de obter informações sobre o sistema operacional e a chave de licença do Windows.
+Este script expande a funcionalidade de extração de dados, com ênfase na coleta de tokens e dados de navegação, além de obter informações sobre o sistema operacional e a chave de licença do Windows. Ele também pode enviar mensagens para um webhook do Discord ou Telegram com os dados coletados.
 
 ### Funcionalidades Principais:
 - **Informações do Sistema**: Coleta dados sobre o sistema, como o nome do computador, sistema operacional, chave do Windows, e endereço MAC.
 - **Coleta de Tokens e Informações do Navegador**: Semelhante ao script anterior, extrai tokens de várias plataformas, como Discord e Steam, além de descriptografar senhas e cookies armazenados nos navegadores.
 - **Coleta de Geolocalização**: Usa a API `ipinfo.io` para obter informações de geolocalização com base no IP público do usuário.
-- **Envio de Resultados para Webhooks**: Pode enviar os resultados coletados para um webhook do Discord ou Telegram, conforme as configurações fornecidas.
+- **Envio de Resultados para Webhooks**: Os resultados coletados podem ser enviados para um webhook do Discord ou para o Telegram, permitindo monitoramento remoto das informações extraídas.
+- **Envio de Dados ao Telegram**: Usa a API do Telegram para enviar os dados coletados diretamente para um chat específico, configurado via token e chat ID.
+- **Envio de Dados ao Discord**: Também pode enviar as informações para um webhook do Discord, facilitando o recebimento das informações em tempo real.
 
 ---
 
