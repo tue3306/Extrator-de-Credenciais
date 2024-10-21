@@ -11,8 +11,7 @@ import socket
 import requests
 import platform
 import uuid
-import time
-import sys
+
 
 # Obtendo os diretórios do sistema
 local = os.getenv('LOCALAPPDATA')
