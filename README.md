@@ -7,11 +7,10 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 **Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
-- **Coleta de Tokens**
-- **Extração de Histórico de Navegação**
-- **Extração de Dados de Preenchimento Automático**
-- **Extração de Cartões de Crédito**
-- **Salvamento dos Resultados**
+- **Fechamento de Processos do browsers**
+- **Extração de Senhas**
+- **Múltiplos Perfis**
+- **Salvamento de Senhas**
 
 ---
 
