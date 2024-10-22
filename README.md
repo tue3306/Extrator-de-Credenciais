@@ -15,7 +15,7 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 
 ---
 
-## `extrator.py`
+## `testenovoextrator.py`
 
 Expande a funcionalidade de extração de dados, incluindo informações sobre o sistema operacional e chave de licença do Windows, além de enviar dados para webhooks.
 
