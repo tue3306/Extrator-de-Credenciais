@@ -8,6 +8,7 @@ from Crypto.Cipher import AES
 import win32crypt
 import ctypes
 import traceback
+import psutil
 
 
 def get_desktop_path():
@@ -65,9 +66,8 @@ def password_decryption(password, encryption_key):
 
 
 def close_browser_process(browser_name):
-    import psutil
     for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'] == browser_name:
+        if proc.info['name'].lower() == browser_name.lower():
             try:
                 proc.kill()
             except psutil.NoSuchProcess:
