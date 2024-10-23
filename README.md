@@ -1,6 +1,6 @@
 # Explicações dos Scripts
 
-## `browsersextrator.py`
+## `testebrowsersextrator.py`
 
 Este script foi projetado para extrair dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e histórico de navegação de vários navegadores, incluindo Google Chrome, Brave, Opera e Yandex.
 
@@ -28,7 +28,7 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 
 
 
-## `chromeextrator.py`
+## `testechromeextrator.py`
 
 Script especializado em extrair senhas do Google Chrome.
 
