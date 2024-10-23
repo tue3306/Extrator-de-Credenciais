@@ -49,10 +49,9 @@ Este script é um keylogger projetado para capturar as teclas pressionadas, tira
 **Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
-- **Captura de Teclas**: Armazena todas as teclas pressionadas, substituindo teclas especiais como `space` por um espaço real, `enter` por uma nova linha e outras teclas especiais como `backspace`, `shift` e `ctrl` por identificadores legíveis.
-- **Envio de Teclas para o Discord**: As teclas capturadas são enviadas para o Discord em intervalos configurados, por padrão a cada 120 segundos ou após a captura de 10 teclas.
-- **Captura de Tela**: Tira uma captura de tela em intervalos aleatórios (entre 120 e 180 segundos) e envia a imagem diretamente para o Discord, sem salvar localmente.
-- **Captura de Imagem da Câmera**: Captura uma imagem da câmera do dispositivo e envia diretamente para o Discord, sem salvar localmente.
-- **Webhook do Discord**: Todas as informações capturadas (teclas, capturas de tela e imagens da câmera) são enviadas diretamente para webhooks configurados no Discord, sem armazenar nada localmente no computador.
+- **Captura de Teclas**
+- **Envio de Teclas para o Discord**
+- **Captura de Tela**
+- **Captura de Imagem da Câmera**
 
 
