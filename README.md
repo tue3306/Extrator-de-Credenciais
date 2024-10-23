@@ -68,3 +68,15 @@ Este script é usado para contornar o Controle de Conta de Usuário (UAC) em sis
 
 
 
+## `testeextratorcombypass.py`
+
+Este script é projetado para coletar dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e informações do sistema, acessando perfis de todos os usuários no sistema.
+
+**Atenção: Uso restrito a fins educacionais.**
+
+### Funcionalidades Principais:
+- **Bypass do Controle de Conta de Usuário (UAC)**
+- **Coleta de Informações do Sistema**
+- **Extração de Tokens do Discord e Steam**
+- **Descriptografia de Dados dos Navegadores**
+- **Envio de Resultados para Webhook**
