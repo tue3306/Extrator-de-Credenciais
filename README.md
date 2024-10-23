@@ -6,7 +6,7 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 
 **Atenção: Uso restrito a fins educacionais.**
 
-### Funcionalidades Principais:
+#### Funcionalidades Principais:
 - **Fechamento de Processos do browsers**
 - **Extração de Senhas**
 - **Múltiplos Perfis**
@@ -20,7 +20,7 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 
 **Atenção: Uso restrito a fins educacionais.**
 
-### Funcionalidades Principais:
+#### Funcionalidades Principais:
 - **Informações do Sistema**
 - **Coleta de Tokens e Informações do Navegador**
 - **Coleta de Geolocalização**
@@ -34,7 +34,7 @@ Script especializado em extrair senhas do Google Chrome.
 
 **Atenção: Este script deve ser usado apenas para fins educacionais.**
 
-### Funcionalidades Principais:
+#### Funcionalidades Principais:
 - **Fechamento de Processos do Chrome**
 - **Extração de Senhas**
 - **Múltiplos Perfis**
@@ -48,7 +48,7 @@ Este script é um keylogger projetado para capturar as teclas pressionadas, tira
 
 **Atenção: Uso restrito a fins educacionais.**
 
-### Funcionalidades Principais:
+#### Funcionalidades Principais:
 - **Captura de Teclas**: Armazena todas as teclas pressionadas, substituindo teclas especiais como `space` por um espaço real, `enter` por uma nova linha e outras teclas especiais como `backspace`, `shift` e `ctrl` por identificadores legíveis.
 - **Envio de Teclas para o Discord**: As teclas capturadas são enviadas para o Discord em intervalos configurados, por padrão a cada 120 segundos ou após a captura de 10 teclas.
 - **Captura de Tela**: Tira uma captura de tela em intervalos aleatórios (entre 120 e 180 segundos) e envia a imagem diretamente para o Discord, sem salvar localmente.
