@@ -42,7 +42,7 @@ Script especializado em extrair senhas do Google Chrome.
 
 
 
-## `keylogger.py`
+## `testekeylogger.py`
 
 Este script é um keylogger projetado para capturar as teclas pressionadas, tirar capturas de tela, capturar imagens da câmera e enviar tudo diretamente para um webhook no Discord.
 
