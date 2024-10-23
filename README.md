@@ -56,12 +56,13 @@ Este script é um keylogger projetado para capturar as teclas pressionadas, tira
 
 
 
-# Bypass UAC com Chaves de Registro
+## `testebypass.py`
 
 Este script é usado para contornar o Controle de Conta de Usuário (UAC) em sistemas Windows, criando chaves de registro específicas para configurar um bypass de UAC.
 
-## Funcionalidades
+**Atenção: Uso restrito a fins educacionais.**
 
+### Funcionalidades Principais:
 - **Criação de Chaves de Registro**
 - **Execução de Comandos com Privilegios Elevados**
 
