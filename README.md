@@ -12,7 +12,7 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 - **Múltiplos Perfis**
 - **Salvamento de Senhas**
 
----
+
 
 ## `testenovoextrator.py`
 
@@ -26,7 +26,7 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 - **Coleta de Geolocalização**
 - **Envio de Resultados para Webhooks**
 
----
+
 
 ## `chromeextrator.py`
 
@@ -40,7 +40,7 @@ Script especializado em extrair senhas do Google Chrome.
 - **Múltiplos Perfis**
 - **Salvamento de Senhas**
 
----
+
 
 ## `keylogger.py`
 
