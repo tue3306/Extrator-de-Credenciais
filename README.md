@@ -55,3 +55,15 @@ Este script é um keylogger projetado para capturar as teclas pressionadas, tira
 - **Captura de Imagem da Câmera**
 
 
+
+# Bypass UAC com Chaves de Registro
+
+Este script é usado para contornar o Controle de Conta de Usuário (UAC) em sistemas Windows, criando chaves de registro específicas para configurar um bypass de UAC.
+
+## Funcionalidades
+
+- **Criação de Chaves de Registro**
+- **Execução de Comandos com Privilegios Elevados**
+
+
+
