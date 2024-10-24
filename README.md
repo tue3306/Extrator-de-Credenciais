@@ -54,6 +54,7 @@ Este script é um keylogger projetado para capturar teclas pressionadas, tirar c
 - **Envio de Teclas e Imagens para o Discord**
 - **Captura de Tela**
 - **Captura de Imagem da Câmera**
+- **Envio de Resultados para Webhooks**
 
 ---
 
