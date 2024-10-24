@@ -50,7 +50,7 @@ Este script é um keylogger projetado para capturar as teclas pressionadas, tira
 
 ### Funcionalidades Principais:
 - **Captura de Teclas**
-- **Envio de Teclas para o Discord**
+- **Envio de Teclas e imagens para o Discord**
 - **Captura de Tela**
 - **Captura de Imagem da Câmera**
 
