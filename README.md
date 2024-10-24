@@ -10,7 +10,7 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 - **Fechamento de Processos do browsers**
 - **Extração de Senhas**
 - **Múltiplos Perfis**
-- **Salvamento de Senhas**
+- **Salvamento de Senhas em um arquivo .txt**
 
 
 
@@ -38,7 +38,7 @@ Script especializado em extrair senhas do Google Chrome.
 - **Fechamento de Processos do Chrome**
 - **Extração de Senhas**
 - **Múltiplos Perfis**
-- **Salvamento de Senhas**
+- **Salvamento de Senhas em um arquivo .txt**
 
 
 
