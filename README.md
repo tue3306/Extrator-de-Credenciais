@@ -1,4 +1,4 @@
-# Explicações dos Scripts
+qs# Explicações dos Scripts
 
 ## `testebrowsersextrator.py`
 
@@ -32,7 +32,7 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 
 Script especializado em extrair senhas do Google Chrome.
 
-**Atenção: Este script deve ser usado apenas para fins educacionais.**
+**Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
 - **Fechamento de Processos do Chrome**
