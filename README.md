@@ -1,4 +1,4 @@
-qs# Explicações dos Scripts
+# Explicações dos Scripts
 
 ## `testebrowsersextrator.py`
 
