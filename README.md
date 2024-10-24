@@ -75,8 +75,7 @@ Este script é projetado para coletar dados armazenados por navegadores e aplica
 **Atenção: Uso restrito a fins educacionais.**
 
 ### Funcionalidades Principais:
-- **Bypass do Controle de Conta de Usuário (UAC)**
+- **Bypass do Controle de Conta de Usuário**
 - **Coleta de Informações do Sistema**
-- **Extração de Tokens do Discord e Steam**
 - **Descriptografia de Dados dos Navegadores**
 - **Envio de Resultados para Webhook**
