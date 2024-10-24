@@ -4,7 +4,6 @@ import ctypes
 import winreg  
 import logging
 
-# Configuração de logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_reg_key(key, value):
