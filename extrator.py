@@ -256,16 +256,14 @@ def capturar_geolocalizacao():
 
             # Escrever as informações no arquivo
             with open(fileInfo, "a") as f:
-                f.write(f"\nInformações de Geolocalização\n")
-                f.write(f"IP Público: {ip_publico}\n")
-                f.write(f"IP Privado: {ip_privado}\n")
-                f.write(f"Cidade: {cidade}\n")
-                f.write(f"Região: {regiao}\n")
-                f.write(f"País: {pais}\n")
-                f.write(f"Localização (Lat, Long): {loc}\n")
+                f.write(f"IP Público {ip_publico}\n")
+                f.write(f"IP Privado {ip_privado}\n")
+                f.write(f"Cidade {cidade}\n")
+                f.write(f"Região {regiao}\n")
+                f.write(f"País {pais}\n")
+                f.write(f"Localização (Lat, Long) {loc}\n")
         else:
             with open(fileInfo, "a") as f:
-                f.write(f"\nInformações de Geolocalização\n")
                 f.write("Não foi possível obter as informações de geolocalização\n")
     except Exception as e:
         with open(fileInfo, "a") as f:
