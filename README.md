@@ -7,9 +7,7 @@ Este script foi projetado para extrair dados armazenados por navegadores e aplic
 > **Atenção**: Uso restrito a fins educacionais.
 
 ### Funcionalidades Principais:
-- **Fechamento de Processos de Navegadores**
 - **Extração de Senhas**
-- **Suporte a Múltiplos Perfis**
 - **Salvamento de Senhas em um arquivo `.txt`**
 
 ---
@@ -21,10 +19,8 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 
 > **Atenção**: Uso restrito a fins educacionais.
 
-### Funcionalidades Principais:
-- **Informações do Sistema Operacional**
+### Funcionalidades Principais:*
 - **Coleta de Tokens e Informações de Navegadores**
-- **Coleta de Geolocalização**
 - **Envio de Resultados para Webhooks**
 
 ---
@@ -36,10 +32,8 @@ Script especializado em extrair senhas do Google Chrome.
 > **Atenção**: Uso restrito a fins educacionais.
 
 ### Funcionalidades Principais:
-- **Fechamento de Processos do Google Chrome**
 - **Extração de Senhas**
-- **Suporte a Múltiplos Perfis**
-- **Salvamento de Senhas em um arquivo `.txt`**
+- **Salvamento de Senhas em um arquivo `.txt`***
 
 ---
 
@@ -68,16 +62,3 @@ Este script é utilizado para contornar o Controle de Conta de Usuário (UAC) em
 - **Criação de Chaves de Registro**
 - **Execução de Comandos com Privilégios Elevados**
 
----
-
-## `testeextratorcombypass.py`
-
-Este script foi projetado para coletar dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e informações do sistema, acessando perfis de todos os usuários no sistema.
-
-> **Atenção**: Uso restrito a fins educacionais.
-
-### Funcionalidades Principais:
-- **Bypass do Controle de Conta de Usuário (UAC)**
-- **Coleta de Informações do Sistema**
-- **Descriptografia de Dados de Navegadores**
-- **Envio de Resultados para Webhook**
