@@ -2,7 +2,7 @@
 
 ## `browsersextrator.py`
 
-Este script foi projetado para extrair dados armazenados por navegadores e aplicativos de desktop, como tokens do Discord, cookies, senhas e histórico de navegação de vários navegadores, incluindo Google Chrome, Brave, Opera e Yandex.
+Este script foi projetado para extrair dados armazenados por navegadores.
 
 > **Atenção**: Uso restrito a fins educacionais.
 
