@@ -21,6 +21,7 @@ Expande a funcionalidade de extração de dados, incluindo informações sobre o
 
 ### Funcionalidades Principais:*
 - **Coleta de Tokens e Informações de Navegadores**
+- **Coleta o IP público e privado**
 - **Envio de Resultados para Webhooks**
 
 ---
