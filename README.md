@@ -51,15 +51,5 @@ Este script é um keylogger projetado para capturar teclas pressionadas, tirar c
 - **Captura de Imagem da Câmera**
 - **Envio de Resultados para Webhooks**
 
----
 
-## `bypass.py`
-
-Este script é utilizado para contornar o Controle de Conta de Usuário (UAC) em sistemas Windows, criando chaves de registro específicas para configurar o bypass de UAC.
-
-> **Atenção**: Uso restrito a fins educacionais.
-
-### Funcionalidades Principais:
-- **Criação de Chaves de Registro**
-- **Execução de Comandos com Privilégios Elevados**
 
