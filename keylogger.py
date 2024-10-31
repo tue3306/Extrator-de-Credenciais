@@ -15,7 +15,7 @@ import io
 from PIL import Image
 
 # ------------------- CONFIGURAÇÕES DE WEBHOOK -------------------
-# WEBHOOK DISCORD 
+
 webhook_keys_url = ""  # URL WEBHOOK 
 webhook_media_url = ""  # URL WEBHOOK  
 
