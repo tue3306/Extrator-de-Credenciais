@@ -8,7 +8,7 @@ Este script foi projetado para extrair dados armazenados por navegadores.
 
 ### Funcionalidades Principais:
 - **Extração de Senhas**
-- **Salvamento de Senhas em um arquivo `.txt`**
+- **Salvamento de Senhas em um arquivo `.txt` (NO DESKTOP) **
 
 ---
 
@@ -34,7 +34,7 @@ Script especializado em extrair senhas do Google Chrome.
 
 ### Funcionalidades Principais:
 - **Extração de Senhas**
-- **Salvamento de Senhas em um arquivo `.txt` (NO DESKTOP)***
+- **Salvamento de Senhas em um arquivo `.txt` (NO DESKTOP) ***
 
 ---
 
