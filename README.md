@@ -10,7 +10,6 @@ Este script foi projetado para extrair dados armazenados por navegadores.
 - **Extração de Senhas**
 - **Salvamento de Senhas em um arquivo `.txt` (NO DESKTOP) **
 
----
 
 
 ## `chromeextrator.py`
@@ -23,7 +22,6 @@ Script especializado em extrair senhas do Google Chrome.
 - **Extração de Senhas**
 - **Salvamento de Senhas em um arquivo `.txt` (NO DESKTOP) ***
 
----
 
 ## `keylogger.py`
 
